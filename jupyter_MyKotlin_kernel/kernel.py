@@ -1039,14 +1039,14 @@ class MyKernel(Kernel):
 class KotlinKernel(MyKernel):
     implementation = 'jupyter-MyKotlin-kernel'
     implementation_version = '1.0'
-    language = 'C'
+    language = 'kotlin'
     language_version = '1'
-    language_info = {'name': 'text/x-kotlin',
-                     'mimetype': 'text/x-kotlin',
+    language_info = {'name': 'text/kotlin',
+                     'mimetype': 'text/kotlin',
                      'file_extension': '.kt'}
     runfiletype='class'
     banner = "MyKotlin kernel.\n" \
-             "Uses gcc, compiles in C11, and creates source code files and executables in temporary folder.\n"
+             "Uses kotlinc, compiles in kotlin, and creates source code files and executables in temporary folder.\n"
     main_head = "#include <stdio.h>\n" \
             "#include <math.h>\n" \
             "int main(int argc, char* argv[], char** env){\n"
