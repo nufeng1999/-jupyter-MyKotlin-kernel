@@ -1262,7 +1262,7 @@ class KotlinKernel(MyKernel):
     implementation = 'jupyter-MyKotlin-kernel'
     implementation_version = '1.0'
     language = 'kotlin'
-    language_version = '1'
+    language_version = ''
     language_info = {'name': 'text/kotlin',
                      'mimetype': 'text/kotlin',
                      'file_extension': '.kt'}
