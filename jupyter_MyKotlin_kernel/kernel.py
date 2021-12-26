@@ -798,16 +798,16 @@ echo "OK"
             cstr=''
             for x in cmd: cstr+=x+" "
             self._logln(cstr)
-            if(outencode==None or len(outencode)<0):
+            if(magics!=None and (outencode==None or len(outencode)<0)):
                 outencode=self.get_outencode(magics)
-            if(len(outencode)<0):
+            if(outencode==None or len(outencode)<0):
                 outencode='UTF-8'
             return RealTimeSubprocess(cmd,
                                   self._write_to_stdout,
                                   self._write_to_stderr,
                                   self._read_from_stdin,cwd,shell,env,self,outencode=outencode)
         except Exception as e:
-            self._write_to_stdout("RealTimeSubprocess err:"+str(e))
+            self._logln("RealTimeSubprocess err:"+str(e),3)
             raise
     def getossubsys(self):
         uname=''
@@ -1320,7 +1320,7 @@ class KotlinKernel(MyKernel):
         binary_filename=os.path.join(outpath,binary_filename)
         binary_filename=binary_filename+"Kt" 
         # self._log("binary_filename:"+binary_filename+"\n")
-        return self.create_jupyter_subprocess(args,env=env),binary_filename+".class",args
+        return self.create_jupyter_subprocess(args,env=env,magics=magics),binary_filename+".class",args
     def _exec_kotlinc_(self,source_filename,magics):
         self._write_to_stdout('Generating binary file\n')
         p,outfile,gcccmd = self.compile_with_kotlinc(
