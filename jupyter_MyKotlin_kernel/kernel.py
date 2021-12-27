@@ -781,7 +781,7 @@ echo "OK"
         try:
             if env==None or len(env)<1:
                 env=os.environ
-            if magics!=None and len(self.addmagicsBkey(magics,'runinterm'))>0:
+            if magics!=None and magics['status']=='' and len(self.addmagicsBkey(magics,'runinterm'))>0:
                 self.inittermcmd(magics)
                 if len(magics['_st']['term'])<1:
                     self._logln("no term！",2)
@@ -1323,6 +1323,7 @@ class KotlinKernel(MyKernel):
         return self.create_jupyter_subprocess(args,env=env,magics=magics),binary_filename+".class",args
     def _exec_kotlinc_(self,source_filename,magics):
         self._write_to_stdout('Generating binary file\n')
+        magics['status']='compiling'
         p,outfile,gcccmd = self.compile_with_kotlinc(
             source_filename, 
             None,
@@ -1333,6 +1334,7 @@ class KotlinKernel(MyKernel):
             )
         returncode=p.wait_end(magics)
         p.write_contents()
+        magics['status']=''
         if returncode != 0:  # Compilation failed
             self._logln(''.join((str(s) for s in ccmd)),3)
             self._logln("Kotlin exited with code {}, the executable will not be executed".format(returncode),3)
