@@ -81,7 +81,10 @@ class KotlinKernel(MyKernel):
         self.kernelinfo="[MyKotlinKernel{0}]".format(time.strftime("%H%M%S", time.localtime()))
         
 #################
-    def compile_with_kotlinc(self, source_filename, binary_filepath=None, cflags=None, ldflags=None,env=None,coptions=None):
+    def compile_with_kotlinc(self, source_filename, 
+        binary_filepath=None, 
+        cflags=None, ldflags=None,
+        env=None,coptions=None,magics=None):
         # coptions = ['-b', '', '-cp', '', '-j'] + cflags
         outpath=os.path.dirname(source_filename)
         sf = os.path.basename(source_filename)
@@ -115,10 +118,10 @@ class KotlinKernel(MyKernel):
         binary_filename=binary_filename.capitalize()
         binary_filename=os.path.join(outpath,binary_filename)
         binary_filename=binary_filename+"Kt" 
-        # self._log("binary_filename:"+binary_filename+"\n")
+        # self.mymagics._log("binary_filename:"+binary_filename+"\n")
         return self.mymagics.create_jupyter_subprocess(args,env=env,magics=magics),binary_filename+".class",args
     def _exec_kotlinc_(self,source_filename,magics):
-        self.mymagics._write_to_stdout('Generating binary file\n')
+        self.mymagics._logln('Generating binary file')
         magics['status']='compiling'
         p,outfile,gcccmd = self.compile_with_kotlinc(
             source_filename, 
@@ -126,7 +129,8 @@ class KotlinKernel(MyKernel):
             self.mymagics.get_magicsSvalue(magics,'cflags'),
             self.mymagics.get_magicsSvalue(magics,'ldflags'),
             self.mymagics.get_magicsbykey(magics,'env'),
-            self.mymagics.get_magicsSvalue(magics,'coptions')
+            self.mymagics.get_magicsSvalue(magics,'coptions'),
+            magics
             )
         returncode=p.wait_end(magics)
         p.write_contents()
@@ -139,10 +143,10 @@ class KotlinKernel(MyKernel):
             # os.remove(binary_file.name)
         return p.returncode,outfile
 ##do_runcode
-    def do_runcode(self,return_code,fil_ename,class_filename,outpath,magics,code, silent, store_history=True,
+    def do_runcode(self,return_code,file_name,class_filename,outpath,magics,code, silent, store_history=True,
                     user_expressions=None, allow_stdin=True):
         return_code=return_code
-        fil_ename=fil_ename
+        file_name=file_name
         bcancel_exec=False
         retinfo=self.mymagics.get_retinfo()
         retstr=''
@@ -156,8 +160,8 @@ class KotlinKernel(MyKernel):
         if magics['_st']['runmode']=='repl':
             self.mymagics._start_replprg('java',magics['_st']['joptions']+[mainclass] + magics['_st']['args'],magics)
             return_code=p.returncode
-            bcancel_exec,retstr=self.mymagics.raise_plugin(code,magics,return_code,fil_ename,3,2)
-            return bcancel_exec,retinfo,magics, code,fil_ename,retstr
+            bcancel_exec,retstr=self.mymagics.raise_plugin(code,magics,return_code,file_name,3,2)
+            return bcancel_exec,retinfo,magics, code,file_name,retstr
         ############################################
     ############################################
         #################dynamically load and execute code
@@ -173,8 +177,8 @@ class KotlinKernel(MyKernel):
         self.mymagics.g_rtsps[str(p.pid)]=p
         return_code=p.returncode
         ##代码启动后
-        bcancel_exec,retstr=self.mymagics.raise_plugin(code,magics,return_code,fil_ename,3,2)
-        # if bcancel_exec:return bcancel_exec,retinfo,magics, code,fil_ename,retstr
+        bcancel_exec,retstr=self.mymagics.raise_plugin(code,magics,return_code,file_name,3,2)
+        # if bcancel_exec:return bcancel_exec,retinfo,magics, code,file_name,retstr
         
         if len(self.mymagics.addkey2dict(magics,'showpid'))>0:
             self.mymagics._write_to_stdout("The process PID:"+str(p.pid)+"\n")
@@ -187,35 +191,35 @@ class KotlinKernel(MyKernel):
             # os.remove(class_filename)
         if p.returncode != 0:
             self.mymagics._logln("Executable exited with code {}".format(p.returncode))
-        return bcancel_exec,retinfo,magics, code,fil_ename,retstr
+        return bcancel_exec,retinfo,magics, code,file_name,retstr
 ##do_compile_code
-    def do_compile_code(self,return_code,fil_ename,magics,code, silent, store_history=True,
+    def do_compile_code(self,return_code,file_name,magics,code, silent, store_history=True,
                     user_expressions=None, allow_stdin=True):
         return_code=0
-        fil_ename=fil_ename
-        sourcefilename=fil_ename
+        file_name=file_name
+        sourcefilename=file_name
         bcancel_exec=False
         retinfo=self.mymagics.get_retinfo()
         retstr=''
         
         # if len(self.mymagics.addkey2dict(magics,'file'))>0:
-        #     fil_ename=magics['file'][0]
-        # else: fil_ename=source_file.name
-        returncode,class_filename=self._exec_kotlinc_(fil_ename,magics)
-        fil_ename=class_filename
+        #     file_name=magics['file'][0]
+        # else: file_name=source_file.name
+        returncode,class_filename=self._exec_kotlinc_(file_name,magics)
+        file_name=class_filename
         outpath=os.path.dirname(class_filename)
         sf = os.path.basename(class_filename)
         class_filename = sf.split(".")[0]
         return_code=returncode
         mainclass=class_filename
-        if returncode!=0:return True,self.mymagics.get_retinfo(),magics, code,fil_ename,class_filename,outpath,retstr
+        if returncode!=0:return True,self.mymagics.get_retinfo(),magics, code,file_name,class_filename,outpath,retstr
         # Generate executable file :end
-        return bcancel_exec,retinfo,magics, code,fil_ename,class_filename,outpath,retstr
+        return bcancel_exec,retinfo,magics, code,file_name,class_filename,outpath,retstr
 ##do_create_codefile
     def do_create_codefile(self,magics,code, silent, store_history=True,
                     user_expressions=None, allow_stdin=True):
         return_code=0
-        fil_ename=''
+        file_name=''
         bcancel_exec=False
         retinfo=self.mymagics.get_retinfo()
         retstr=''
@@ -223,13 +227,13 @@ class KotlinKernel(MyKernel):
         outpath=''
         source_file=self.mymagics.create_codetemp_file(magics,code,suffix='.kt')
         newsrcfilename=source_file.name
-        fil_ename=newsrcfilename
+        file_name=newsrcfilename
         return_code=True
         
         ############# only run gcc，no not run executable file
         # if len(self.addkey2dict(magics,'onlyrungcc'))>0:
         #     self._log("only run gcc \n")
-        return  bcancel_exec,self.mymagics.get_retinfo(),magics, code,fil_ename,class_filename,outpath,retstr
+        return  bcancel_exec,self.mymagics.get_retinfo(),magics, code,file_name,class_filename,outpath,retstr
     def do_preexecute(self,code,magics, silent, store_history=True,
                 user_expressions=None, allow_stdin=False):
         bcancel_exec=False
