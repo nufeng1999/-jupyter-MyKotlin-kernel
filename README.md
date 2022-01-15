@@ -10,6 +10,8 @@
   * pip
 ### Step-by-step
 ```bash
+
+pip install zerorpc
 git clone https://github.com/nufeng1999/jupyter-MyKotlin-kernel.git
 cd jupyter-MyKotlin-kernel
 pip install -e . 
