@@ -3,7 +3,7 @@
 with open("README.md", "r") as f:
 	long_description = f.read()
 import setuptools
-setuptools.setup(name='jupyter_MyMyKotlin_kernel',
+setuptools.setup(name='jupyter_MyKotlin_kernel',
       version='0.0.1',
       description='Minimalistic Kotlin kernel for Jupyter',
     long_description=long_description,
